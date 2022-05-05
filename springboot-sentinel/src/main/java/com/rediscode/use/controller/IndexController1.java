@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 扣减库存测试
  */
@@ -42,9 +44,10 @@ public class IndexController1 {
 
     @RequestMapping("/deduct_stock")
     public String deductStock(){
-
+        String locKKey = "lockKey";
         try{
-            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent("lockKey","zhuge");
+            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge");
+            stringRedisTemplate.expire(locKKey,10, TimeUnit.SECONDS);
             if (!result){
                 return "error";
             }
@@ -57,7 +60,7 @@ public class IndexController1 {
                 System.out.println("扣减失败，库存不足");
             }
         }finally {
-            stringRedisTemplate.delete("lockKey");
+            stringRedisTemplate.delete(locKKey);
         }
 
         return "end";
