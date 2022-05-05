@@ -40,13 +40,15 @@ public class IndexController1 {
 
     @RequestMapping("/deduct_stock")
     public String deductStock(){
-        int stock = Integer.parseInt(stringRedisTemplate.opsForValue().get("stock"));
-        if (stock>0){
-            int realStock = stock-1;
-            stringRedisTemplate.opsForValue().set("stock",realStock+"");
-            System.out.println("扣减成功，剩余库存："+realStock+"");
-        }else{
-            System.out.println("扣减失败，库存不足");
+        synchronized (this){
+            int stock = Integer.parseInt(stringRedisTemplate.opsForValue().get("stock"));
+            if (stock>0){
+                int realStock = stock-1;
+                stringRedisTemplate.opsForValue().set("stock",realStock+"");
+                System.out.println("扣减成功，剩余库存："+realStock+"");
+            }else{
+                System.out.println("扣减失败，库存不足");
+            }
         }
         return "";
     }
