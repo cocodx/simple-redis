@@ -42,7 +42,12 @@ public class IndexController1 {
 
     @RequestMapping("/deduct_stock")
     public String deductStock(){
-        synchronized (this){
+
+        try{
+            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent("lockKey","zhuge");
+            if (!result){
+                return "error";
+            }
             int stock = Integer.parseInt(stringRedisTemplate.opsForValue().get("stock"));
             if (stock>0){
                 int realStock = stock-1;
@@ -51,7 +56,10 @@ public class IndexController1 {
             }else{
                 System.out.println("扣减失败，库存不足");
             }
+        }finally {
+            stringRedisTemplate.delete("lockKey");
         }
-        return "";
+
+        return "end";
     }
 }
