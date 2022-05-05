@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,11 +46,14 @@ public class IndexController1 {
     @RequestMapping("/deduct_stock")
     public String deductStock(){
         String locKKey = "lockKey";
+
+        String clientId = UUID.randomUUID().toString();
         try{
 //            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge");
 //            stringRedisTemplate.expire(locKKey,10, TimeUnit.SECONDS);
 
-            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge",10,TimeUnit.SECONDS);
+            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,clientId,10,TimeUnit.SECONDS);
+            //锁续期，强行续命。没有拿到锁的注解返回了，分线程定时器不断重复，判断clientId是不是我自己加的。
             if (!result){
                 return "error";
             }
@@ -62,7 +66,9 @@ public class IndexController1 {
                 System.out.println("扣减失败，库存不足");
             }
         }finally {
-            stringRedisTemplate.delete(locKKey);
+            if (clientId.equals(stringRedisTemplate.opsForValue().get(locKKey))){
+                stringRedisTemplate.delete(locKKey);
+            }
         }
 
         return "end";
