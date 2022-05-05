@@ -63,7 +63,7 @@ public class IndexController1 {
 //            if (!result){
 //                return "error";
 //            }
-            
+
             redissonLock.lock(30,TimeUnit.SECONDS);
 
             int stock = Integer.parseInt(stringRedisTemplate.opsForValue().get("stock"));
