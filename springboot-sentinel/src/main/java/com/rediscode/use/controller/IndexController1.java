@@ -46,8 +46,10 @@ public class IndexController1 {
     public String deductStock(){
         String locKKey = "lockKey";
         try{
-            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge");
-            stringRedisTemplate.expire(locKKey,10, TimeUnit.SECONDS);
+//            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge");
+//            stringRedisTemplate.expire(locKKey,10, TimeUnit.SECONDS);
+
+            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge",10,TimeUnit.SECONDS);
             if (!result){
                 return "error";
             }
