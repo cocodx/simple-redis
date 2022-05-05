@@ -1,5 +1,7 @@
 package com.rediscode.use.controller;
 
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -43,20 +45,27 @@ public class IndexController1 {
         }
     }
 
+    @Autowired
+    private Redisson redisson;
+
     @RequestMapping("/deduct_stock")
     public String deductStock(){
         String locKKey = "lockKey";
 
-        String clientId = UUID.randomUUID().toString();
+//        String clientId = UUID.randomUUID().toString();
+        RLock redissonLock = redisson.getLock(locKKey);
         try{
 //            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,"zhuge");
 //            stringRedisTemplate.expire(locKKey,10, TimeUnit.SECONDS);
 
-            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,clientId,10,TimeUnit.SECONDS);
-            //锁续期，强行续命。没有拿到锁的注解返回了，分线程定时器不断重复，判断clientId是不是我自己加的。
-            if (!result){
-                return "error";
-            }
+//            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(locKKey,clientId,10,TimeUnit.SECONDS);
+//            //锁续期，强行续命。没有拿到锁的注解返回了，分线程定时器不断重复，判断clientId是不是我自己加的。
+//            if (!result){
+//                return "error";
+//            }
+            
+            redissonLock.lock(30,TimeUnit.SECONDS);
+
             int stock = Integer.parseInt(stringRedisTemplate.opsForValue().get("stock"));
             if (stock>0){
                 int realStock = stock-1;
@@ -66,9 +75,10 @@ public class IndexController1 {
                 System.out.println("扣减失败，库存不足");
             }
         }finally {
-            if (clientId.equals(stringRedisTemplate.opsForValue().get(locKKey))){
-                stringRedisTemplate.delete(locKKey);
-            }
+//            if (clientId.equals(stringRedisTemplate.opsForValue().get(locKKey))){
+//                stringRedisTemplate.delete(locKKey);
+//            }
+            redissonLock.unlock();
         }
 
         return "end";
