@@ -11,6 +11,6 @@ public class LockTest {
     public void testSetNx(){
         JedisUtil jedisUtil = new JedisUtil();
         Jedis jedis = jedisUtil.getJedis();
-        System.out.println("设置setnx成功："+RedisTest.tryLock(jedis,"2022-05-27"));
+        System.out.println("设置setnx成功："+RedisTest.tryLock(jedis,"2022-05-28"));
     }
 }
