@@ -1,0 +1,4 @@
+
+*.class
+*.class
+jedis-use/target/classes/com/rediscode/use/CRCTest.class
